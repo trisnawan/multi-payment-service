@@ -1,0 +1,26 @@
+{
+    "name": "trisnawan/multi-payment-service",
+    "type": "library",
+    "description": "PHP Library untuk koneksi ke backend pembayaran (tertutup) by Trisnawan.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Trisnawan",
+            "email": "devs.trisnasejati@gmail.com",
+            "homepage": "https://trisnawan.my.id",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.4.0",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Trisnawan\\MultiPaymentService\\": "src/"
+        }
+    },
+    "require-dev": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
