@@ -5,37 +5,9 @@ use Trisnawan\MultiPaymentService\PaymentRequest;
 use Trisnawan\MultiPaymentService\ItemTransaction;
 use Trisnawan\MultiPaymentService\ItemChannel;
 use Trisnawan\MultiPaymentService\ItemCategory;
-
-class PaymentCategory {
-    public $id, $title, $description;
-
-    public function __construct(string $id, string $title, string $description) {
-        $this->id = $id; // ID Referensi Kategori
-        $this->title = $title; // Judul Kategori
-        $this->description = $description; // Deskripsi Kategori
-    }
-}
-
-class PaymentBuyer {
-    public $full_name, $email, $phone;
-
-    public function __construct(string $full_name, string $email, string $phone) {
-        $this->full_name = $full_name; // Nama Pelanggan
-        $this->email = $email; // Email Pelanggan
-        $this->phone = $phone; // Telepon Pelanggan
-    }
-}
-
-class PaymentInvoice {
-    public $title, $description, $amount, $redirect;
-
-    public function __construct(string $title, string $description, int $amount, string|null $redirect = null) {
-        $this->title = $title; // Judul Transaksi
-        $this->description = $description; // Deskripsi Transaksi
-        $this->amount = $amount; // Nominal Transaksi
-        $this->redirect = $redirect; // URL Redirecting
-    }
-}
+use Trisnawan\MultiPaymentService\PaymentInvoice;
+use Trisnawan\MultiPaymentService\PaymentBuyer;
+use Trisnawan\MultiPaymentService\PaymentCategory;
 
 class PaymentGateway extends PaymentRequest {
 
