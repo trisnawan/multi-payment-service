@@ -3,7 +3,8 @@
 namespace Trisnawan\MultiPaymentService;
 
 class ItemTransaction {
-    public string|null $id, $user_id, $category_id, $method_id, $subscription_id;
+    public string|null $id, $user_id, $method_id, $subscription_id;
+    public string|null $category_id, $category_reference;
     public string|null $client_code, $provider_code, $type, $status;
     public string|null $buyer_name, $charge_amount, $capture_amount, $fee_amount;
     public string|null $payment_method, $payment_provider;
@@ -16,6 +17,7 @@ class ItemTransaction {
         $this->id = $data['id'] ?? null;
         $this->user_id = $data['user_id'] ?? null;
         $this->category_id = $data['category_id'] ?? null;
+        $this->category_reference = $data['category_reference'] ?? null;
         $this->method_id = $data['method_id'] ?? null;
         $this->subscription_id = $data['subscription_id'] ?? null;
         $this->client_code = $data['client_code'] ?? null;
