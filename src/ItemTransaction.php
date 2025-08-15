@@ -6,7 +6,7 @@ class ItemTransaction {
     public string|null $id, $user_id, $method_id, $subscription_id;
     public string|null $category_id, $category_reference;
     public string|null $client_code, $provider_code, $type, $status;
-    public string|null $buyer_name, $charge_amount, $capture_amount, $fee_amount;
+    public string|null $buyer_name, $charge_amount, $capture_amount, $fee_amount, $total_amount;
     public string|null $payment_method, $payment_provider;
     public string|null $mobile_number, $cashtag, $return_url;
     public ItemDirectTransaction|null $direct;
@@ -28,6 +28,7 @@ class ItemTransaction {
         $this->charge_amount = $data['charge_amount'] ?? null;
         $this->capture_amount = $data['capture_amount'] ?? null;
         $this->fee_amount = $data['fee_amount'] ?? null;
+        $this->total_amount = $data['total_amount'] ?? null;
         $this->payment_method = $data['payment_method'] ?? null;
         $this->payment_provider = $data['payment_provider'] ?? null;
         $this->mobile_number = $data['mobile_number'] ?? null;
