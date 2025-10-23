@@ -13,42 +13,17 @@ composer require trisnawan/multi-payment-service
 ```plain
 payment.api = 'https://baseurl.payment.api/'
 payment.token = 'secret-token'
+payment.webhook = 'webhook-token'
 ```
 
-## Initialization
+## Payments
 
 ```php
-use Trisnawan\MultiPaymentService\PaymentGateway;
+use Trisnawan\MultiPaymentService\RequestPayment;
 ```
 
-## List Payment Method
+## Webhook
 
 ```php
-$payment = new PaymentGateway();
-$data = $payment->findPaymentMethod();
-```
-
-## List Categories
-
-```php
-$payment = new PaymentGateway();
-$data = $payment->findCategories();
-```
-
-## Create Invoice
-
-```php
-$invoice = new PaymentInvoice("Title", "Description", 100000, "https://redirect.link");
-$buyer = new PaymentBuyer("Full name", "email@example.com", "+628xxx");
-$category = new PaymentCategory("id-cat-1", "Category Title", "Category Description");
-
-$payment = new PaymentGateway();
-$data = $payment->createTransaction($method_id, $client_code, $invoice, $buyer, $category);
-```
-
-## Get Detail Invoice
-
-```php
-$payment = new PaymentGateway();
-$data = $payment->getTransaction($id);
+use Trisnawan\MultiPaymentService\Webhook;
 ```

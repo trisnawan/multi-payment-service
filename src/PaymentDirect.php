@@ -4,34 +4,34 @@ use Trisnawan\MultiPaymentService\PaymentBuyer;
 use Trisnawan\MultiPaymentService\PaymentCategory;
 
 /**
- * Class PaymentInvoice
+ * Class PaymentDirect
  * 
- * Request data Link Payment.
- * Ini adalah entitas utama untuk membuat transaksi dengan link dengan metode pembayaran
- * dipilih oleh user nanti (payment link).
+ * Request data Direct Payment.
+ * Ini adalah entitas utama untuk membuat transaksi dengan memilih metode pembayaran
+ * secara direct (langsung).
  */
-class PaymentInvoice {
-    public string|null $id, $reference_id, $title, $description, $redirect_url;
-    public int|null $amount;
+class PaymentDirect {
+    public string|null $id, $client_code, $title, $description, $redirect_url, $method_id;
+    public int|null $charge_amount;
     public string|null $buyer_id, $buyer_name, $buyer_email, $buyer_phone;
     public PaymentBuyer $buyer;
     public PaymentCategory $category;
 
     public function __construct(
-        PaymentBuyer $buyer, PaymentCategory $category, string $reference_id,
-        string $title, string $description, int $amount, string $redirect_url
+        PaymentBuyer $buyer, PaymentCategory $category, string $method_id, string $reference_id,
+        string $title, string $description, int $charge_amount, string $redirect_url
     ) {
         $this->id = null;
-        $this->reference_id = $reference_id;
+        $this->method_id = $method_id;
+        $this->client_code = $reference_id;
         $this->title = $title;
         $this->description = $description;
         $this->redirect_url = $redirect_url;
-        $this->amount = $amount;
+        $this->charge_amount = $charge_amount;
         $this->buyer_id = $buyer->reference_id;
         $this->buyer_name = $buyer->full_name;
         $this->buyer_email = $buyer->email;
         $this->buyer_phone = $buyer->phone;
-        $this->buyer = $buyer;
         $this->category = $category;
     }
 }

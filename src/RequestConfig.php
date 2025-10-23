@@ -3,7 +3,12 @@
 namespace Trisnawan\MultiPaymentService;
 use GuzzleHttp\Client;
 
-class PaymentRequest {
+/**
+ * Class RequestConfig
+ * 
+ * Konfigurasi utama API Request dan Response
+ */
+class RequestConfig {
     protected Client $client;
     private int|null $responseCode = null;
     private bool $success = false;
@@ -17,15 +22,27 @@ class PaymentRequest {
         ]);
     }
 
-    public function isSuccess(){
+    /**
+     * Memberikan status request ke API.
+     * @return bool Status request API true/false
+     */
+    public function isSuccess(): bool {
         return $this->success;
     }
 
-    public function getResponseCode(){
+    /**
+     * Memberika kode respon HTTP.
+     * @return int|null HTTP Response Code
+     */
+    public function getResponseCode(): int|null {
         return $this->responseCode;
     }
 
-    public function getData(){
+    /**
+     * Memberikan data response dari API.
+     * @return array|null Array raw data dari API
+     */
+    public function getData(): array|null {
         return $this->data;
     }
 
@@ -37,10 +54,17 @@ class PaymentRequest {
             return $this->data;
         }
 
-        throw new \Exception($body['messages']['error'] ?? ('Failed, error ' . $response->getStatusCode()));
+        throw new \Exception($this->data['messages']['error'] ?? ('Failed, error ' . $response->getStatusCode()));
     }
 
-    public function requestPost($endpoint, $data){
+    /**
+     * Jalankan request POST dengan fungsi ini.
+     * 
+     * @param string        $endpoint   Path URL, contoh: payment/direct
+     * @param object|array  $data       Data yang akan diteruskan ke API
+     * @return array|null               Respon API berupa array raw
+     */
+    public function requestPost(string $endpoint, object|array $data){
         $baseApi = getenv('payment.api');
         $token = getenv('payment.token');
 
@@ -51,7 +75,7 @@ class PaymentRequest {
         $response = $this->client->request('POST', $baseApi.$endpoint, [
             'connect_timeout' => 10,
             'http_errors' => false,
-            'json' => $data,
+            'body' => json_encode($data),
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
@@ -62,7 +86,14 @@ class PaymentRequest {
         return $this->responseRequets($response, $endpoint);
     }
 
-    public function requestGet($endpoint, $params = null){
+    /**
+     * Jalankan request GET dengan fungsi ini.
+     * 
+     * @param string        $endpoint   Path URL, contoh: payment/direct
+     * @param object|array  $params     Parameter yang akan diteruskan ke API
+     * @return array|null               Respon API berupa array raw
+     */
+    public function requestGet(string $endpoint, array|null $params = null){
         $baseApi = getenv('payment.api');
         $token = getenv('payment.token');
 
@@ -78,7 +109,6 @@ class PaymentRequest {
             'http_errors' => false,
             'headers' => [
                 'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $token
             ]
         ]);

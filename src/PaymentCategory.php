@@ -2,12 +2,18 @@
 
 namespace Trisnawan\MultiPaymentService;
 
+/**
+ * Class PaymentCategory
+ * 
+ * Request data Transaction Category.
+ */
 class PaymentCategory {
-    public $id, $title, $description;
+    public $id, $reference_id, $title, $description;
 
-    public function __construct(string $id, string $title, string $description) {
-        $this->id = $id; // ID Referensi Kategori
-        $this->title = $title; // Judul Kategori
-        $this->description = $description; // Deskripsi Kategori
+    public function __construct(string $reference_id, string $title, string $description) {
+        $this->id = null;
+        $this->reference_id = $reference_id;
+        $this->title = $title;
+        $this->description = $description;
     }
 }

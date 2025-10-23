@@ -2,9 +2,27 @@
 
 namespace Trisnawan\MultiPaymentService;
 
-class PaymentWebhook {
+/**
+ * Class Webhook
+ * 
+ * Untuk memverifikasi data yang diterima dari server payment untuk
+ * memberikan detail update data pada transaksi.
+ * 
+ * Tips:
+ * 1. Gunakan 'client_code' untuk verifikasi data sebagai ID Referensi Anda
+ * 2. Gunakan 'status' untuk menentukan status pembayaran (paid atau unpaid)
+ * 3. Gunakan 'charge_amount' sebagai nominal transaksi sebelum biaya admin
+ * 4. Gunakan 'total_amount' sebagai nominal transaksi setelah biaya admin
+ * 5. Gunakan 'fee_amount' untuk nominal biaya admin
+ */
+class Webhook {
     public $responseCode = 500;
 
+    /**
+     * Memverifikasi request dari server
+     * 
+     * @return ItemTransaction Berisi data transaksi direct atau redirect
+     */
     public function verifyData(){
         $token = getenv('payment.webhook');
         $headers = getallheaders();
