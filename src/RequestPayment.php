@@ -116,6 +116,24 @@ class RequestPayment extends RequestConfig {
         return new ItemTransaction($data);
     }
 
+    /** Batalkan transaksi lokal (direct maupun redirect). Tagihan provider dapat tetap aktif. */
+    public function cancelDirect(string $id): array {
+        $data = $this->requestPost('payment/transaction/cancel/' . rawurlencode($id), []);
+        return $data['data'] ?? $data ?? [];
+    }
+
+    /** Batalkan invoice dan seluruh percobaan pembayaran yang belum dibayar. */
+    public function cancelLink(string $id): array {
+        $data = $this->requestPost('payment/link/cancel/' . rawurlencode($id), []);
+        return $data['data'] ?? $data ?? [];
+    }
+
+    /** Rekonsiliasi status terbaru dari provider Pivot. */
+    public function refreshDirect(string $id): array {
+        $data = $this->requestPost('payment/transaction/refresh/' . rawurlencode($id), []);
+        return $data['data'] ?? $data ?? [];
+    }
+
     /**
      * Mengambil detail laporan transaksi
      * 
