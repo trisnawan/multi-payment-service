@@ -16,6 +16,8 @@ class PaymentInvoice {
     public string|null $buyer_id, $buyer_name, $buyer_email, $buyer_phone;
     public PaymentBuyer $buyer;
     public PaymentCategory $category;
+    /** Kedaluwarsa opsional, format tanggal backend; null memakai default backend. */
+    public ?string $expired_at = null;
 
     public function __construct(
         PaymentBuyer $buyer, PaymentCategory $category, string $reference_id,

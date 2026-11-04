@@ -47,14 +47,26 @@ class RequestConfig {
     }
 
     public function responseRequets($response, $endpoint){
+        $this->success = false;
         $this->responseCode = $response->getStatusCode();
-        $this->data = json_decode($response->getBody(), true);
+        $decoded = json_decode((string) $response->getBody(), true);
+        $this->data = is_array($decoded) ? $decoded : null;
         if($response->getStatusCode() >= 200 && $response->getStatusCode() < 300){
+            if($this->data === null && $this->responseCode !== 204){
+                throw new \Exception('Invalid JSON response from Payment API.', $this->responseCode);
+            }
             $this->success = true;
             return $this->data;
         }
 
-        throw new \Exception($this->data['messages']['error'] ?? ('Failed, error ' . $response->getStatusCode()));
+        $message = $this->data['messages']['error'] ?? $this->data['message'] ?? ('Failed, error ' . $this->responseCode);
+        throw new \Exception(is_string($message) ? $message : json_encode($message), $this->responseCode);
+    }
+
+    private function resetResponse(): void {
+        $this->success = false;
+        $this->responseCode = null;
+        $this->data = null;
     }
 
     /**
@@ -65,6 +77,7 @@ class RequestConfig {
      * @return array|null               Respon API berupa array raw
      */
     public function requestPost(string $endpoint, object|array $data){
+        $this->resetResponse();
         $baseApi = getenv('payment.api');
         $token = getenv('payment.token');
 
@@ -72,7 +85,7 @@ class RequestConfig {
             throw new \Exception("Payment API base URL or token is not set in environment variables.");
         }
 
-        $response = $this->client->request('POST', $baseApi.$endpoint, [
+        $response = $this->client->request('POST', rtrim($baseApi, '/') . '/' . ltrim($endpoint, '/'), [
             'connect_timeout' => 10,
             'http_errors' => false,
             'body' => json_encode($data),
@@ -94,6 +107,7 @@ class RequestConfig {
      * @return array|null               Respon API berupa array raw
      */
     public function requestGet(string $endpoint, array|null $params = null){
+        $this->resetResponse();
         $baseApi = getenv('payment.api');
         $token = getenv('payment.token');
 
@@ -102,9 +116,9 @@ class RequestConfig {
         }
 
         if($params ?? false){
-            $endpoint .= "?" . http_build_query($params);
+            $endpoint .= (strpos($endpoint, '?') === false ? '?' : '&') . http_build_query($params);
         }
-        $response = $this->client->request('GET', $baseApi.$endpoint, [
+        $response = $this->client->request('GET', rtrim($baseApi, '/') . '/' . ltrim($endpoint, '/'), [
             'connect_timeout' => 5,
             'http_errors' => false,
             'headers' => [

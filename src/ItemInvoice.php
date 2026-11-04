@@ -18,6 +18,9 @@ class ItemInvoice {
     public string|null $link;
     public PaymentBuyer|null $buyer;
     public string|null $redirect_url, $status, $expired_at, $created_at;
+    public ?string $updated_at, $category_description;
+    /** @var ItemTransaction[] Percobaan pembayaran invoice. */
+    public array $transactions;
 
     public function __construct(array|null $data = null) {
         $this->id = $data['id'] ?? null;
@@ -25,6 +28,7 @@ class ItemInvoice {
         $this->category_id = $data['category_id'] ?? null;
         $this->category_reference = $data['category_reference'] ?? null;
         $this->category_title = $data['category_title'] ?? null;
+        $this->category_description = $data['category_description'] ?? null;
         $this->client_code = $data['client_code'] ?? $data['reference_id'] ?? null;
         $this->title = $data['title'] ?? null;
         $this->description = $data['description'] ?? null;
@@ -32,9 +36,17 @@ class ItemInvoice {
         $this->redirect_url = $data['redirect_url'] ?? null;
         $this->status = $data['status'] ?? null;
         $this->link = $data['link'] ?? null;
-        $this->buyer = new PaymentBuyer($data['reference_id']??null, $data['full_name']??null, $data['email']??null, $data['phone']??null);
+        $buyer = $data['buyer'] ?? [];
+        $this->buyer = new PaymentBuyer(
+            $data['buyer_id'] ?? $buyer['reference_id'] ?? $data['reference_id'] ?? null,
+            $data['buyer_name'] ?? $buyer['full_name'] ?? $data['full_name'] ?? null,
+            $data['buyer_email'] ?? $buyer['email'] ?? $data['email'] ?? null,
+            $data['buyer_phone'] ?? $buyer['phone'] ?? $data['phone'] ?? null
+        );
+        $this->transactions = ItemTransaction::fromArrayList($data['transactions'] ?? []);
         $this->expired_at = isset($data['expired_at']) ? date('Y-m-d H:i:s', strtotime($data['expired_at'])) : null;
         $this->created_at = isset($data['created_at']) ? date('Y-m-d H:i:s', strtotime($data['created_at'])) : null;
+        $this->updated_at = isset($data['updated_at']) ? date('Y-m-d H:i:s', strtotime($data['updated_at'])) : null;
     }
 
     public static function fromArrayList(array $data): array{

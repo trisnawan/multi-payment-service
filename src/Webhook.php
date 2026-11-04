@@ -24,26 +24,44 @@ class Webhook {
      * @return ItemTransaction Berisi data transaksi direct atau redirect
      */
     public function verifyData(){
+        $headers = function_exists('getallheaders') ? getallheaders() : [];
+        foreach($_SERVER as $name => $value){
+            if(strpos($name, 'HTTP_') === 0){
+                $headers[str_replace('_', '-', substr($name, 5))] = $value;
+            }
+        }
+        return $this->verifyPayload((string) file_get_contents('php://input'), $headers);
+    }
+
+    /** Verifikasi raw body dan header dari framework tanpa mengubah pemakaian verifyData(). */
+    public function verifyPayload(string $jsonBody, array $headers): ItemTransaction {
+        $this->responseCode = 500;
         $token = getenv('payment.webhook');
-        $headers = getallheaders();
-        $jsonBody = file_get_contents("php://input");
-        if(!$jsonBody){
+        if(!is_string($token) || $token === ''){
+            throw new \Exception('Payment webhook secret is not set in environment variables.');
+        }
+        $headers = array_change_key_case($headers, CASE_LOWER);
+        if($jsonBody === ''){
             $this->responseCode = 400;
             throw new \Exception("No data received in the request body.");
         }
         
         $stringToSign = strtolower(hash('sha256', $jsonBody)) . ':' . $token;
         $signature = hash_hmac('sha256', $stringToSign, $token);
-        if(!in_array($signature, [$headers['signature'] ?? null, $headers['Signature'] ?? null])){
+        $provided = $headers['signature'] ?? null;
+        $providedToken = $headers['m-payment-token'] ?? null;
+        if(!is_string($provided) || !hash_equals($signature, $provided)
+            || ($providedToken !== null && (!is_string($providedToken) || !hash_equals($token, $providedToken)))){
             $this->responseCode = 403;
             throw new \Exception("Signature verification failed. Invalid signature.");
         }
 
         $data = json_decode($jsonBody, true);
-        if(json_last_error() != JSON_ERROR_NONE){
+        if(json_last_error() != JSON_ERROR_NONE || !is_array($data)){
             $this->responseCode = 400;
             throw new \Exception("Invalid JSON format in request body: " . json_last_error_msg());
         }
-        return new \Trisnawan\MultiPaymentService\ItemTransaction($data);
+        $this->responseCode = 200;
+        return new ItemTransaction($data);
     }
 }

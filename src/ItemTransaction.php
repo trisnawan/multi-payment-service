@@ -21,6 +21,12 @@ class ItemTransaction {
     public ItemRedirectTransaction|null $redirect;
     public ItemInvoice|null $invoice;
     public string|null $expired_at, $created_at, $updated_at;
+    public ?string $invoice_id, $provider_id, $channel_id, $ch_code, $bank_code;
+    public ?string $title, $description, $payment_note, $payment_logo;
+    public ?string $category_title, $category_description, $app_title;
+    public ?string $user_full_name, $user_email, $user_phone, $event;
+    public ?int $cycle_number;
+    public array $properties, $items;
 
     public function __construct(array|null $data = null) {
         $this->id = $data['id'] ?? null;
@@ -29,6 +35,25 @@ class ItemTransaction {
         $this->category_reference = $data['category_reference'] ?? null;
         $this->method_id = $data['method_id'] ?? null;
         $this->subscription_id = $data['subscription_id'] ?? null;
+        $this->invoice_id = $data['invoice_id'] ?? null;
+        $this->provider_id = $data['provider_id'] ?? null;
+        $this->channel_id = $data['channel_id'] ?? null;
+        $this->ch_code = $data['ch_code'] ?? null;
+        $this->bank_code = $data['bank_code'] ?? null;
+        $this->title = $data['title'] ?? null;
+        $this->description = $data['description'] ?? null;
+        $this->payment_note = $data['payment_note'] ?? null;
+        $this->payment_logo = $data['payment_logo'] ?? null;
+        $this->category_title = $data['category_title'] ?? null;
+        $this->category_description = $data['category_description'] ?? null;
+        $this->app_title = $data['app_title'] ?? null;
+        $this->user_full_name = $data['user_full_name'] ?? null;
+        $this->user_email = $data['user_email'] ?? null;
+        $this->user_phone = $data['user_phone'] ?? null;
+        $this->event = $data['event'] ?? null;
+        $this->cycle_number = isset($data['cycle_number']) ? (int) $data['cycle_number'] : null;
+        $this->properties = $data['properties'] ?? [];
+        $this->items = $data['items'] ?? [];
         $this->client_code = $data['client_code'] ?? null;
         $this->provider_code = $data['provider_code'] ?? null;
         $this->type = $data['type'] ?? null;
@@ -40,9 +65,9 @@ class ItemTransaction {
         $this->total_amount = $data['total_amount'] ?? 0;
         $this->payment_method = $data['payment_method'] ?? null;
         $this->payment_provider = $data['payment_provider'] ?? null;
-        $this->mobile_number = $data['mobile_number'] ?? null;
-        $this->cashtag = $data['cashtag'] ?? null;
-        $this->return_url = $data['return_url'] ?? null;
+        $this->mobile_number = $data['mobile_number'] ?? $this->properties['mobile_number'] ?? null;
+        $this->cashtag = $data['cashtag'] ?? $this->properties['cashtag'] ?? null;
+        $this->return_url = $data['return_url'] ?? $this->properties['return_url'] ?? null;
 
         $this->direct = new ItemDirectTransaction($data['direct'] ?? null);
         $this->redirect = new ItemRedirectTransaction($data['redirect'] ?? null);
@@ -65,12 +90,13 @@ class ItemTransaction {
 }
 
 class ItemDirectTransaction {
-    public $id, $virtual_account, $qr_string;
+    public $id, $virtual_account, $qr_string, $qr_image;
 
     public function __construct(array|null $data = null) {
         $this->id = $data['id'] ?? null;
         $this->virtual_account = $data['virtual_account'] ?? null;
         $this->qr_string = $data['qr_string'] ?? null;
+        $this->qr_image = $data['qr_image'] ?? null;
     }
 }
 

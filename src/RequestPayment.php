@@ -27,7 +27,7 @@ class RequestPayment extends RequestConfig {
      * @return array Berisi list objek dari entitas ItemChannel
      */
     public function findPaymentMethod($amount = 0){
-        $data = $this->requestGet("payment/method", ['amount'=>$amount]) ?? [];
+        $data = $this->unwrapData($this->requestGet("payment/method", ['amount'=>$amount]));
         return ItemChannel::fromArrayList($data);
     }
 
@@ -37,7 +37,7 @@ class RequestPayment extends RequestConfig {
      * @return array Berisi list objek dari entitas ItemCategory
      */
     public function findCategories(){
-        $data = $this->requestGet("payment/categories") ?? [];
+        $data = $this->unwrapData($this->requestGet("payment/categories"));
         return ItemCategory::fromArrayList($data);
     }
 
@@ -50,7 +50,7 @@ class RequestPayment extends RequestConfig {
      */
     public function createLink(PaymentInvoice $invoice): ItemInvoice {
         $data = $this->requestPost("payment/link/create", $invoice);
-        return new ItemInvoice($data);
+        return new ItemInvoice($this->unwrapData($data));
     }
 
     /**
@@ -64,7 +64,7 @@ class RequestPayment extends RequestConfig {
     public function findLink(int $limit = 10, int $offset = 0, string $search = ''): array {
         $data = $this->requestGet("payment/link", ["limit"=>$limit, "offset"=>$offset, "search"=>$search]);
         if(!$data) return [];
-        return ItemInvoice::fromArrayList($data);
+        return ItemInvoice::fromArrayList($this->unwrapData($data));
     }
 
     /**
@@ -74,8 +74,8 @@ class RequestPayment extends RequestConfig {
      * @return ItemInvoice Berisi data invoice beserta link
      */
     public function getLink(string $id): ItemInvoice {
-        $data = $this->requestGet("payment/link/detail/$id");
-        return new ItemInvoice($data);
+        $data = $this->requestGet('payment/link/detail/' . rawurlencode($id));
+        return new ItemInvoice($this->unwrapData($data));
     }
 
     /**
@@ -87,7 +87,7 @@ class RequestPayment extends RequestConfig {
      */
     public function createDirect(PaymentDirect $direct): ItemTransaction {
         $data = $this->requestPost("payment/direct/create", $direct);
-        return new ItemTransaction($data);
+        return new ItemTransaction($this->unwrapData($data));
     }
 
     /**
@@ -95,13 +95,14 @@ class RequestPayment extends RequestConfig {
      * 
      * @param int $limit Limit per request
      * @param int $offset Jumlah data per request
-     * @param string $status Status pembayaran (paid,unpaid,failed)
+     * @param string $status Status pembayaran (paid,unpaid,expired,cancelled,failed)
      * @param string $search Kata kunci untuk pencarian
      * @return ItemTransaction[] Berisi data transaksi direct atau redirect
      */
     public function findDirect(int $limit = 10, int $offset = 0, string $status = '', string $search = ''): array {
         $data = $this->requestGet("payment/report", ["limit"=>$limit, "offset"=>$offset, "status"=>$status, "search"=>$search]);
         if(!$data) return [];
+        $data = $this->unwrapData($data);
         return ItemTransaction::fromArrayList($data['data'] ?? []);
     }
 
@@ -112,8 +113,8 @@ class RequestPayment extends RequestConfig {
      * @return ItemTransaction Berisi data transaksi direct atau redirect
      */
     public function getDirect(string $id): ItemTransaction {
-        $data = $this->requestGet("payment/direct/detail/$id");
-        return new ItemTransaction($data);
+        $data = $this->requestGet('payment/direct/detail/' . rawurlencode($id));
+        return new ItemTransaction($this->unwrapData($data));
     }
 
     /** Batalkan transaksi lokal (direct maupun redirect). Tagihan provider dapat tetap aktif. */
@@ -134,6 +135,53 @@ class RequestPayment extends RequestConfig {
         return $data['data'] ?? $data ?? [];
     }
 
+    /** Capability backend untuk akun/token saat ini, termasuk simulation dan remote_cancellation. */
+    public function getCapabilities(): array {
+        return $this->unwrapData($this->requestGet('payment/transaction/capabilities'));
+    }
+
+    /** Detail transaksi direct maupun redirect melalui endpoint lifecycle terbaru. */
+    public function getTransaction(string $id): ItemTransaction {
+        return new ItemTransaction($this->unwrapData($this->requestGet('payment/transaction/detail/' . rawurlencode($id))));
+    }
+
+    /**
+     * Simulasi non-production; memerlukan token client dengan grant update.
+     * Status: paid, expired, cancel (canonical: cancelled), cancelled, failed.
+     * @return array Hasil transisi: id, status, changed.
+     */
+    public function simulateTransaction(string $id, string $status = 'paid'): array {
+        return $this->unwrapData($this->requestPost('payment/transaction/simulate/' . rawurlencode($id), ['status' => $status]));
+    }
+
+    /** Alias simulasi yang mengikuti penamaan createDirect/cancelDirect/refreshDirect. */
+    public function simulateDirect(string $id, string $status = 'paid'): array {
+        return $this->simulateTransaction($id, $status);
+    }
+
+    /** Kirim ulang webhook transaksi. */
+    public function resendWebhook(string $id): array {
+        return $this->unwrapData($this->requestPost('payment/transaction/resend/' . rawurlencode($id), []));
+    }
+
+    /**
+     * Laporan berhalaman dengan filter limit, offset, status, search, start, end, cat_id, cat_ref.
+     * @return array{total: int, data: ItemTransaction[]}
+     */
+    public function findReport(array $filters = []): array {
+        $data = $this->unwrapData($this->requestGet('payment/report', $filters));
+        $rows = $data['data'] ?? [];
+        return ['total' => (int) ($data['total'] ?? count($rows)), 'data' => ItemTransaction::fromArrayList($rows)];
+    }
+
+    /** Pertahankan requestGet/requestPost sebagai raw response, normalisasi hanya untuk helper. */
+    private function unwrapData(?array $data): array {
+        if(isset($data['status']) && is_numeric($data['status']) && array_key_exists('data', $data)){
+            return $data['data'] ?? [];
+        }
+        return $data ?? [];
+    }
+
     /**
      * Mengambil detail laporan transaksi
      * 
@@ -147,7 +195,7 @@ class RequestPayment extends RequestConfig {
 
         $data = $this->requestGet("payment/report/detail", ["id" => $id]);
         if($data){
-            return new ItemTransaction($data);
+            return new ItemTransaction($this->unwrapData($data));
         }
     }
 }
